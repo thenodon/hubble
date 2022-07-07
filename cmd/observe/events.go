@@ -36,6 +36,8 @@ func handleEventsArgs(debug bool) error {
 		opts = append(opts, hubprinter.JSON())
 	case "jsonpb":
 		opts = append(opts, hubprinter.JSONPB())
+	case "kafkajsonpb":
+		opts = append(opts, hubprinter.KafkaJSONPB())
 	case "tab", "table":
 		if selectorOpts.follow {
 			return fmt.Errorf("table output format is not compatible with follow mode")

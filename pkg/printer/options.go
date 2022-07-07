@@ -16,6 +16,7 @@ package printer
 
 import (
 	"fmt"
+	"github.com/cilium/hubble/pkg/kafka"
 	"io"
 	"os"
 )
@@ -35,6 +36,7 @@ const (
 	DictOutput
 	// JSONPBOutput prints GetFlowsResponse as JSON according to proto3's JSON mapping.
 	JSONPBOutput
+	KafkaJSONPBOutput
 )
 
 // Options for the printer.
@@ -64,6 +66,18 @@ func JSON() Option {
 func JSONPB() Option {
 	return func(opts *Options) {
 		opts.output = JSONPBOutput
+	}
+}
+
+func KafkaJSONPB() Option {
+	return func(opts *Options) {
+		opts.output = KafkaJSONPBOutput
+		producer, err := kafka.ProducerInit()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		opts.w = producer
 	}
 }
 

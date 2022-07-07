@@ -355,6 +355,11 @@ func (p *Printer) WriteProtoFlow(res *observerpb.GetFlowsResponse) error {
 		return p.jsonEncoder.Encode(f)
 	case JSONPBOutput:
 		return p.jsonEncoder.Encode(res)
+	case KafkaJSONPBOutput:
+		data, _ := res.GetFlow().MarshalJSON()
+		w := p.opts.w
+		w.Write(data)
+		return nil
 	}
 	p.line++
 	return nil

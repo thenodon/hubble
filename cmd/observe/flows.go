@@ -451,11 +451,12 @@ more.`,
 	formattingFlags.StringVarP(
 		&formattingOpts.output, "output", "o", "compact",
 		`Specify the output format, one of:
-  compact:  Compact output
-  dict:     Each flow is shown as KEY:VALUE pair
-  json:     JSON encoding (DEPRECATED: use --output=jsonpb instead)
-  jsonpb:   Output each GetFlowResponse according to proto3's JSON mapping
-  table:    Tab-aligned columns
+  compact:     Compact output
+  dict:        Each flow is shown as KEY:VALUE pair
+  json:        JSON encoding (DEPRECATED: use --output=jsonpb instead)
+  jsonpb:      Output each GetFlowResponse according to proto3's JSON mapping
+  table:       Tab-aligned columns
+  kafkajsonpb: Send flow events to kafka topic
 `)
 	formattingFlags.BoolVarP(&formattingOpts.nodeName, "print-node-name", "", false, "Print node name in output")
 	formattingFlags.StringVar(
@@ -603,6 +604,8 @@ func handleFlowArgs(ofilter *flowFilter, debug bool) (err error) {
 		opts = append(opts, hubprinter.JSON())
 	case "jsonpb":
 		opts = append(opts, hubprinter.JSONPB())
+	case "kafkajsonpb":
+		opts = append(opts, hubprinter.KafkaJSONPB())
 	case "tab", "table":
 		if selectorOpts.follow {
 			return fmt.Errorf("table output format is not compatible with follow mode")
