@@ -225,7 +225,11 @@ func GetFlowType(f *pb.Flow) string {
 	case api.MessageTypeDrop:
 		return api.DropReason(uint8(f.GetEventType().GetSubType()))
 	case api.MessageTypePolicyVerdict:
-		return api.MessageTypeNamePolicyVerdict + ":" + api.PolicyMatchType(f.GetPolicyMatchType()).String()
+		return fmt.Sprintf("%s:%s %s",
+			api.MessageTypeNamePolicyVerdict,
+			api.PolicyMatchType(f.GetPolicyMatchType()).String(),
+			f.GetTrafficDirection().String())
+
 	case api.MessageTypeCapture:
 		return f.GetDebugCapturePoint().String()
 	}
@@ -645,7 +649,7 @@ func fmtEndpointShort(ep *pb.Endpoint) string {
 	str := fmt.Sprintf("ID: %d", ep.GetID())
 	if ns, pod := ep.GetNamespace(), ep.GetPodName(); ns != "" && pod != "" {
 		str = fmt.Sprintf("%s/%s (%s)", ns, pod, str)
-	} else if lbls := ep.GetLabels(); len(lbls) == 1 && strings.HasPrefix("reserved:", lbls[0]) {
+	} else if lbls := ep.GetLabels(); len(lbls) == 1 && strings.HasPrefix(lbls[0], "reserved:") {
 		str = fmt.Sprintf("%s (%s)", lbls[0], str)
 	}
 
@@ -744,12 +748,13 @@ func (p *Printer) WriteProtoDebugEvent(r *observerpb.GetDebugEventsResponse) err
 func (p *Printer) Hostname(ip, port string, ns, pod, svc string, names []string) (host string) {
 	host = ip
 	if p.opts.enableIPTranslation {
-		if pod != "" {
+		switch {
+		case pod != "":
 			// path.Join omits the slash if ns is empty
 			host = path.Join(ns, pod)
-		} else if svc != "" {
+		case svc != "":
 			host = path.Join(ns, svc)
-		} else if len(names) != 0 {
+		case len(names) != 0:
 			host = strings.Join(names, ",")
 		}
 	}
